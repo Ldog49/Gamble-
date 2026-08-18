@@ -1,0 +1,102 @@
+// Prisma schema for the Premier League Bet Tracker
+// docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  bets      Bet[]
+}
+
+enum BetType {
+  MATCH_RESULT
+  OVER_UNDER
+  BTTS
+  DOUBLE_CHANCE
+  ANYTIME_SCORER
+  CORRECT_SCORE
+  OTHER
+}
+
+enum BetStatus {
+  PENDING
+  NEEDS_REVIEW
+  WON
+  LOST
+  PUSH
+  VOID
+}
+
+model Bet {
+  id String @id @default(cuid())
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  // raw, unedited output from the vision extraction (kept for audit/debug)
+  rawExtraction Json?
+
+  betType    BetType
+  betTypeRaw String?
+
+  homeTeam  String
+  awayTeam  String
+  selection String
+
+  odds            Decimal @db.Decimal(6, 2)
+  stake           Decimal @default(5.00) @db.Decimal(6, 2)
+  potentialReturn Decimal @db.Decimal(8, 2)
+
+  fixture   Fixture? @relation(fields: [fixtureId], references: [id])
+  fixtureId String?
+  gameweek  Int?
+
+  status         BetStatus @default(PENDING)
+  gradedAt       DateTime?
+  gradeNote      String?
+  manualOverride Boolean   @default(false)
+
+  slipImagePath String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, gameweek])
+  @@index([gameweek])
+  @@index([status])
+}
+
+model Fixture {
+  id String @id @default(cuid())
+
+  externalId Int @unique
+  season     Int
+  gameweek   Int
+
+  homeTeam      String
+  awayTeam      String
+  homeTeamApiId Int
+  awayTeamApiId Int
+
+  kickoff DateTime
+  status  String
+
+  homeScore Int?
+  awayScore Int?
+
+  updatedAt DateTime @updatedAt
+
+  bets Bet[]
+
+  @@index([season, gameweek])
+  @@index([homeTeam, awayTeam])
+}

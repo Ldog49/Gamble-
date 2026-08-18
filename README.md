@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PL Bet Tracker
 
-## Getting Started
+Weekly £5 Premier League bets, tracked and graded. Upload a photo of a bet365
+slip, it gets auto-read and matched to a fixture, and once results are in the
+app grades it and rolls everything up into weekly and season tables + graphs.
 
-First, run the development server:
+## Stack
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Next.js (App Router, TypeScript) + Tailwind + Prisma/PostgreSQL + Recharts.
+Claude vision (Anthropic API) reads bet slip photos. football-data.org
+supplies Premier League fixtures/results. No passwords — pick your name,
+session kept in a signed cookie.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Local development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. Get a Postgres database (see `.env.example` for the shape of `DATABASE_URL`).
+2. `cp .env.example .env` and fill in:
+   - `DATABASE_URL` — your Postgres connection string
+   - `ANTHROPIC_API_KEY` — from console.anthropic.com (used to read slip photos)
+   - `FOOTBALL_DATA_API_KEY` — free key from football-data.org (used for fixtures/results)
+   - `SESSION_SECRET` — random string, e.g. `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+3. `npm install`
+4. `npm run db:migrate` — applies the schema
+5. `npm run db:seed` — creates a couple of test users (edit `prisma/seed.ts` to change them)
+6. `npm run dev` → http://localhost:3000
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## How it works
 
-## Learn More
+- **Upload a bet** (`/bets/upload`): take/choose a photo of a bet365 slip →
+  Claude vision reads it → you confirm/edit the extracted fields → it's saved
+  and matched to a Premier League fixture (and therefore a gameweek).
+- **This Week** (`/bets/week`): everyone's bet for a gameweek, with a "Sync
+  results" button that pulls the latest Premier League results and
+  auto-grades match result / over-under / BTTS / double-chance bets. Anything
+  else (or anything ambiguous) is left "Needs Review" for manual grading —
+  every bet's result can be manually set/overridden at any time via its
+  status badge.
+- **Summary** (`/summary`): a per-user/per-gameweek profit table plus a
+  profit-per-gameweek bar chart and a cumulative season-profit line chart.
 
-To learn more about Next.js, take a look at the following resources:
+## Deploying to Railway
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Push this repo to GitHub.
+2. In Railway: New Project → Deploy from GitHub repo → select this repo.
+3. Add a Postgres plugin to the project (New → Database → PostgreSQL).
+4. On the web service, set env vars: `DATABASE_URL` (reference the Postgres
+   plugin's `DATABASE_URL`), `ANTHROPIC_API_KEY`, `FOOTBALL_DATA_API_KEY`,
+   `SESSION_SECRET`, `FOOTBALL_DATA_SEASON`, and `SLIP_STORAGE_PATH=/data/slips`.
+5. Add a Volume to the web service mounted at `/data` (Settings → Volumes) —
+   this is where uploaded slip photos persist across deploys.
+6. Push to `main` to trigger the first deploy. The start command
+   (`prisma migrate deploy && next start`) applies migrations automatically
+   on every deploy.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+To keep results fresh automatically, add a Railway Cron Schedule that calls
+`POST /api/fixtures/sync` on a schedule (not set up by default — the "Sync
+results" button on the This Week page covers this manually for now).
