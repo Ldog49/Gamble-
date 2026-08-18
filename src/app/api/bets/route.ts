@@ -76,7 +76,7 @@ export async function POST(request: Request) {
       status: fixture ? "PENDING" : "NEEDS_REVIEW",
       gradeNote: fixture
         ? null
-        : "No matching fixture found yet — try syncing results or check the team names",
+        : "No matching fixture found for these teams this season — check the team names, or this match may not be in the Premier League this season",
     },
     include: { user: true },
   });

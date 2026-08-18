@@ -8,6 +8,19 @@ import type { ParsedSlip } from "@/types";
 
 type Step = "upload" | "parsing" | "confirm" | "saving";
 
+interface BetPayload {
+  slipImagePath: string;
+  rawExtraction: ParsedSlip | null;
+  betType: string;
+  betTypeRaw: string | null;
+  homeTeam: string;
+  awayTeam: string;
+  selection: string;
+  odds: number;
+  stake: number;
+  potentialReturn: number;
+}
+
 export default function UploadFlow() {
   const router = useRouter();
   const [step, setStep] = useState<Step>("upload");
@@ -15,6 +28,29 @@ export default function UploadFlow() {
   const [extraction, setExtraction] = useState<ParsedSlip | null>(null);
   const [parseWarning, setParseWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  async function postBet(payload: BetPayload): Promise<boolean> {
+    setStep("saving");
+    setError(null);
+    try {
+      const res = await fetch("/api/bets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? "Could not save bet");
+      }
+      await res.json();
+      router.push("/bets/week");
+      router.refresh();
+      return true;
+    } catch (err) {
+      setError((err as Error).message);
+      return false;
+    }
+  }
 
   async function handleFile(file: File) {
     setStep("parsing");
@@ -27,52 +63,53 @@ export default function UploadFlow() {
       const res = await fetch("/api/bets/parse", { method: "POST", body: formData });
       const data = await res.json();
 
-      if (data.slipImagePath) setSlipImagePath(data.slipImagePath);
+      const imagePath: string | undefined = data.slipImagePath;
+      if (imagePath) setSlipImagePath(imagePath);
 
-      if (res.ok) {
-        setExtraction(data.extraction as ParsedSlip);
+      if (res.ok && imagePath) {
+        // Slip was read successfully — save it straight away, no manual
+        // confirm step. If the save itself fails, fall back to the
+        // editable form below (pre-filled) so nothing gets lost.
+        const parsedExtraction = data.extraction as ParsedSlip;
+        setExtraction(parsedExtraction);
+        const saved = await postBet({
+          slipImagePath: imagePath,
+          rawExtraction: parsedExtraction,
+          betType: parsedExtraction.betType,
+          betTypeRaw: parsedExtraction.betTypeRaw,
+          homeTeam: parsedExtraction.homeTeam,
+          awayTeam: parsedExtraction.awayTeam,
+          selection: parsedExtraction.selection,
+          odds: parsedExtraction.odds,
+          stake: parsedExtraction.stake,
+          potentialReturn: parsedExtraction.potentialReturn,
+        });
+        if (!saved) setStep("confirm");
       } else {
         setParseWarning(data.error ?? "Could not automatically read the slip.");
+        setStep("confirm");
       }
-      setStep("confirm");
     } catch {
       setError("Upload failed. Check your connection and try again.");
       setStep("upload");
     }
   }
 
-  async function handleSave(values: BetFormValues) {
+  async function handleManualSave(values: BetFormValues) {
     if (!slipImagePath) return;
-    setStep("saving");
-    setError(null);
-    try {
-      const res = await fetch("/api/bets", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          slipImagePath,
-          rawExtraction: extraction,
-          betType: values.betType,
-          betTypeRaw: values.betTypeRaw || null,
-          homeTeam: values.homeTeam,
-          awayTeam: values.awayTeam,
-          selection: values.selection,
-          odds: Number(values.odds),
-          stake: Number(values.stake),
-          potentialReturn: Number(values.potentialReturn),
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error ?? "Could not save bet");
-      }
-      await res.json();
-      router.push("/bets/week");
-      router.refresh();
-    } catch (err) {
-      setError((err as Error).message);
-      setStep("confirm");
-    }
+    const saved = await postBet({
+      slipImagePath,
+      rawExtraction: extraction,
+      betType: values.betType,
+      betTypeRaw: values.betTypeRaw || null,
+      homeTeam: values.homeTeam,
+      awayTeam: values.awayTeam,
+      selection: values.selection,
+      odds: Number(values.odds),
+      stake: Number(values.stake),
+      potentialReturn: Number(values.potentialReturn),
+    });
+    if (!saved) setStep("confirm");
   }
 
   return (
@@ -93,13 +130,16 @@ export default function UploadFlow() {
           Reading your slip…
         </p>
       )}
+      {step === "saving" && (
+        <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">Saving bet…</p>
+      )}
 
-      {(step === "confirm" || step === "saving") && (
+      {step === "confirm" && (
         <BetConfirmForm
           extraction={extraction}
           parseWarning={parseWarning}
-          onSubmit={handleSave}
-          submitting={step === "saving"}
+          onSubmit={handleManualSave}
+          submitting={false}
         />
       )}
     </div>

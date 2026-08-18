@@ -36,12 +36,14 @@ export function gradeBet(bet: GradableBet, fixture: Fixture | null): GradeResult
     throw new Error("gradeBet must not be called on a manually-overridden bet");
   }
 
-  if (
-    !fixture ||
-    fixture.status !== "FINISHED" ||
-    fixture.homeScore == null ||
-    fixture.awayScore == null
-  ) {
+  if (!fixture) {
+    return {
+      status: "NEEDS_REVIEW",
+      note: "No matching fixture found for these teams this season — check the team names, or this match may not be in the Premier League this season",
+    };
+  }
+
+  if (fixture.status !== "FINISHED" || fixture.homeScore == null || fixture.awayScore == null) {
     return { status: "PENDING", note: "Awaiting final score" };
   }
 
