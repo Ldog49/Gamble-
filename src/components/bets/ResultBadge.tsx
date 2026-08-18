@@ -4,13 +4,60 @@ import { useState } from "react";
 import { BET_STATUS_LABELS, BET_STATUSES, type BetDTO, type BetStatus } from "@/types";
 
 const STATUS_STYLES: Record<BetStatus, string> = {
-  PENDING: "bg-zinc-100 text-zinc-600 dark:bg-zinc-800 dark:text-zinc-300",
-  NEEDS_REVIEW: "bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300",
-  WON: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300",
-  LOST: "bg-rose-100 text-rose-800 dark:bg-rose-950 dark:text-rose-300",
-  PUSH: "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300",
-  VOID: "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400",
+  PENDING: "bg-surface-secondary text-muted-foreground",
+  NEEDS_REVIEW: "bg-warning-subtle text-warning",
+  WON: "bg-success-subtle text-success",
+  LOST: "bg-danger-subtle text-danger",
+  PUSH: "bg-info-subtle text-info",
+  VOID: "bg-surface-secondary text-muted-foreground",
 };
+
+function StatusIcon({ status }: { status: BetStatus }) {
+  const common = { width: 12, height: 12, viewBox: "0 0 12 12", fill: "none", "aria-hidden": true };
+  switch (status) {
+    case "WON":
+      return (
+        <svg {...common}>
+          <path d="M2.5 6.2 5 8.7 9.5 3.3" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+    case "LOST":
+      return (
+        <svg {...common}>
+          <path d="M3 3 9 9M9 3 3 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+        </svg>
+      );
+    case "NEEDS_REVIEW":
+      return (
+        <svg {...common}>
+          <path d="M6 1.2 11 10.2H1L6 1.2Z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round" />
+          <path d="M6 4.8V6.8" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+          <circle cx="6" cy="8.6" r="0.6" fill="currentColor" />
+        </svg>
+      );
+    case "PUSH":
+      return (
+        <svg {...common}>
+          <path d="M2 4.5H10M2 7.5H10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+        </svg>
+      );
+    case "VOID":
+      return (
+        <svg {...common}>
+          <circle cx="6" cy="6" r="4.3" stroke="currentColor" strokeWidth="1.3" />
+          <path d="M3.3 3.3 8.7 8.7" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
+        </svg>
+      );
+    case "PENDING":
+    default:
+      return (
+        <svg {...common}>
+          <circle cx="6" cy="6" r="4.3" stroke="currentColor" strokeWidth="1.3" />
+          <path d="M6 3.6V6l1.8 1.2" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      );
+  }
+}
 
 export default function ResultBadge({
   bet,
@@ -46,21 +93,28 @@ export default function ResultBadge({
       <button
         onClick={() => setOpen((v) => !v)}
         disabled={saving}
-        className={`rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap ${STATUS_STYLES[bet.status]}`}
+        title={bet.manualOverride ? "Set manually" : undefined}
+        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap transition disabled:opacity-60 ${STATUS_STYLES[bet.status]}`}
       >
+        <StatusIcon status={bet.status} />
         {BET_STATUS_LABELS[bet.status]}
-        {bet.manualOverride && " ✓"}
+        {bet.manualOverride && (
+          <span aria-hidden className="ml-0.5 size-1.5 rounded-full bg-current opacity-60" />
+        )}
       </button>
       {open && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 z-20 mt-1 w-44 rounded-lg border border-zinc-200 bg-white p-1 shadow-lg dark:border-zinc-700 dark:bg-zinc-900">
+          <div className="absolute right-0 z-20 mt-1 w-44 rounded-lg border border-border bg-surface p-1 shadow-lg">
             {BET_STATUSES.map((s) => (
               <button
                 key={s}
                 onClick={() => setStatus(s)}
-                className="block w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800"
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm text-foreground hover:bg-brand-subtle"
               >
+                <span className={STATUS_STYLES[s].split(" ")[1]}>
+                  <StatusIcon status={s} />
+                </span>
                 {BET_STATUS_LABELS[s]}
               </button>
             ))}

@@ -36,14 +36,12 @@ export default function SyncResultsButton() {
       <button
         onClick={sync}
         disabled={busy}
-        className="rounded-lg bg-zinc-900 px-3 py-1.5 text-sm font-medium whitespace-nowrap text-white disabled:opacity-50 dark:bg-white dark:text-zinc-900"
+        className="rounded-lg border border-brand px-3 py-1.5 text-sm font-medium whitespace-nowrap text-brand-text transition hover:bg-brand-subtle disabled:opacity-50"
       >
         {busy ? "Syncing…" : "Sync results"}
       </button>
       {message && (
-        <p className="max-w-[220px] text-right text-xs text-zinc-500 dark:text-zinc-400">
-          {message}
-        </p>
+        <p className="max-w-[220px] text-right text-xs text-muted-foreground">{message}</p>
       )}
     </div>
   );

@@ -6,8 +6,8 @@ export function formatMoney(n: number | null | undefined): string {
 }
 
 export function profitClass(n: number | null | undefined): string {
-  if (n == null) return "text-zinc-400";
-  if (n > 0) return "text-emerald-600 dark:text-emerald-400";
-  if (n < 0) return "text-rose-600 dark:text-rose-400";
-  return "text-zinc-500 dark:text-zinc-400";
+  if (n == null) return "text-muted-foreground/60";
+  if (n > 0) return "text-success";
+  if (n < 0) return "text-danger";
+  return "text-muted-foreground";
 }

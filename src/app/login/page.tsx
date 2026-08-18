@@ -63,24 +63,27 @@ export default function LoginPage() {
 
   return (
     <div className="flex flex-1 items-center justify-center p-4">
-      <div className="w-full max-w-sm rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <h1 className="text-xl font-semibold">Gamble Gamble Gamble</h1>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-          Who&apos;s this?
-        </p>
+      <div className="w-full max-w-sm rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <h1 className="flex items-center gap-1.5 text-xl font-semibold tracking-tight">
+          <span aria-hidden className="text-brand-text">
+            ⚽
+          </span>
+          Gamble Gamble Gamble
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">Who&apos;s this?</p>
 
         {error && (
-          <p className="mt-3 rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">
+          <p className="mt-3 rounded-lg bg-danger-subtle px-3 py-2 text-sm text-danger">
             {error}
           </p>
         )}
 
         <div className="mt-4 flex flex-col gap-2">
           {users === null && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">Loading…</p>
+            <p className="text-sm text-muted-foreground">Loading…</p>
           )}
           {users?.length === 0 && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="text-sm text-muted-foreground">
               No one&apos;s here yet — add yourself below.
             </p>
           )}
@@ -89,29 +92,29 @@ export default function LoginPage() {
               key={user.id}
               onClick={() => pickUser(user)}
               disabled={busyId !== null}
-              className="w-full rounded-xl border border-zinc-200 px-4 py-3 text-left font-medium transition hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-800 dark:hover:bg-zinc-800"
+              className="w-full rounded-xl border border-border px-4 py-3 text-left font-medium transition hover:border-brand hover:bg-brand-subtle disabled:opacity-50"
             >
               {user.name}
               {busyId === user.id && (
-                <span className="ml-2 text-xs text-zinc-400">signing in…</span>
+                <span className="ml-2 text-xs text-muted-foreground">signing in…</span>
               )}
             </button>
           ))}
         </div>
 
-        <form onSubmit={createUser} className="mt-5 flex gap-2 border-t border-zinc-200 pt-5 dark:border-zinc-800">
+        <form onSubmit={createUser} className="mt-5 flex gap-2 border-t border-border pt-5">
           <input
             type="text"
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Your name"
             maxLength={40}
-            className="flex-1 rounded-xl border border-zinc-300 px-3 py-2 text-sm outline-none focus:border-zinc-500 dark:border-zinc-700 dark:bg-zinc-950"
+            className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-brand"
           />
           <button
             type="submit"
             disabled={busyId !== null || !newName.trim()}
-            className="rounded-xl bg-zinc-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-zinc-900"
+            className="rounded-xl bg-brand px-4 py-2 text-sm font-medium text-brand-foreground transition hover:bg-brand-strong disabled:opacity-50"
           >
             {busyId === "new" ? "…" : "I'm new"}
           </button>

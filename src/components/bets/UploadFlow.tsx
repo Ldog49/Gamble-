@@ -117,21 +117,17 @@ export default function UploadFlow() {
       <h1 className="text-lg font-semibold">Upload a bet slip</h1>
 
       {error && (
-        <p className="rounded-lg bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:bg-rose-950 dark:text-rose-300">
-          {error}
-        </p>
+        <p className="rounded-lg bg-danger-subtle px-3 py-2 text-sm text-danger">{error}</p>
       )}
 
       {(step === "upload" || step === "parsing") && (
         <SlipUploader onFileSelected={handleFile} disabled={step === "parsing"} />
       )}
       {step === "parsing" && (
-        <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">
-          Reading your slip…
-        </p>
+        <p className="text-center text-sm text-muted-foreground">Reading your slip…</p>
       )}
       {step === "saving" && (
-        <p className="text-center text-sm text-zinc-500 dark:text-zinc-400">Saving bet…</p>
+        <p className="text-center text-sm text-muted-foreground">Saving bet…</p>
       )}
 
       {step === "confirm" && (

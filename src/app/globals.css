@@ -1,26 +1,87 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Neutrals, tinted toward the pitch-green brand hue (150) rather than pure gray */
+  --background: oklch(98.5% 0.004 150);
+  --foreground: oklch(19% 0.012 150);
+  --surface: oklch(100% 0 0);
+  --surface-secondary: oklch(96.5% 0.008 150);
+  --border: oklch(89% 0.008 150);
+  --muted-foreground: oklch(48% 0.014 150);
+
+  /* Brand: pitch green, doubles as the "profit" color */
+  --brand: oklch(46% 0.15 150);
+  --brand-strong: oklch(40% 0.14 150);
+  --brand-subtle: oklch(93% 0.045 150);
+  --brand-text: oklch(38% 0.14 150);
+  --brand-foreground: oklch(99% 0.004 150);
+
+  /* Semantic state colors */
+  --success: var(--brand-text);
+  --success-subtle: var(--brand-subtle);
+  --danger: oklch(48% 0.19 25);
+  --danger-subtle: oklch(94% 0.045 25);
+  --warning: oklch(45% 0.12 70);
+  --warning-subtle: oklch(94% 0.05 75);
+  --info: oklch(46% 0.11 235);
+  --info-subtle: oklch(94% 0.025 235);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-surface: var(--surface);
+  --color-surface-secondary: var(--surface-secondary);
+  --color-border: var(--border);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-brand: var(--brand);
+  --color-brand-strong: var(--brand-strong);
+  --color-brand-subtle: var(--brand-subtle);
+  --color-brand-text: var(--brand-text);
+  --color-brand-foreground: var(--brand-foreground);
+
+  --color-success: var(--success);
+  --color-success-subtle: var(--success-subtle);
+  --color-danger: var(--danger);
+  --color-danger-subtle: var(--danger-subtle);
+  --color-warning: var(--warning);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-info: var(--info);
+  --color-info-subtle: var(--info-subtle);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: oklch(17% 0.01 150);
+    --foreground: oklch(95% 0.006 150);
+    --surface: oklch(21% 0.012 150);
+    --surface-secondary: oklch(24.5% 0.014 150);
+    --border: oklch(32% 0.016 150);
+    --muted-foreground: oklch(68% 0.012 150);
+
+    --brand: oklch(52% 0.16 150);
+    --brand-strong: oklch(58% 0.15 150);
+    --brand-subtle: oklch(28% 0.06 150);
+    --brand-text: oklch(72% 0.14 150);
+    --brand-foreground: oklch(99% 0.004 150);
+
+    --success: var(--brand-text);
+    --success-subtle: var(--brand-subtle);
+    --danger: oklch(72% 0.16 25);
+    --danger-subtle: oklch(28% 0.05 25);
+    --warning: oklch(78% 0.13 75);
+    --warning-subtle: oklch(28% 0.05 75);
+    --info: oklch(72% 0.1 235);
+    --info-subtle: oklch(27% 0.03 235);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
 }

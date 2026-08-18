@@ -7,9 +7,9 @@ export default function GameweekSummaryTable({ summary }: { summary: SummaryResp
   );
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800">
+    <div className="overflow-x-auto rounded-xl border border-border">
       <table className="w-full text-sm">
-        <thead className="bg-zinc-50 text-left text-xs uppercase tracking-wide text-zinc-500 dark:bg-zinc-900 dark:text-zinc-400">
+        <thead className="bg-surface-secondary text-left text-xs uppercase tracking-wide text-muted-foreground">
           <tr>
             <th className="px-3 py-2">GW</th>
             <th className="px-3 py-2">User</th>
@@ -19,14 +19,14 @@ export default function GameweekSummaryTable({ summary }: { summary: SummaryResp
             <th className="px-3 py-2 text-right">Cumulative</th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800">
+        <tbody className="divide-y divide-border">
           {summary.byGameweek.flatMap((gw) =>
             summary.users.map((user) => {
               const cell = gw.perUser[user];
               const cumulative = cumulativeByGw.get(gw.gameweek)?.[user] ?? null;
               return (
-                <tr key={`${gw.gameweek}-${user}`}>
-                  <td className="px-3 py-2 text-zinc-500 dark:text-zinc-400">{gw.gameweek}</td>
+                <tr key={`${gw.gameweek}-${user}`} className="bg-surface">
+                  <td className="px-3 py-2 text-muted-foreground">{gw.gameweek}</td>
                   <td className="px-3 py-2 font-medium">{user}</td>
                   <td className="px-3 py-2 text-right">
                     {cell.stake ? `£${cell.stake.toFixed(2)}` : "—"}

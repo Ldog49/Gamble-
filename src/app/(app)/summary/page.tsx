@@ -19,7 +19,7 @@ export default async function SummaryPage() {
     return (
       <div className="flex flex-col gap-4">
         <h1 className="text-lg font-semibold">Season Summary</h1>
-        <p className="rounded-xl border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+        <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
           No bets tied to a gameweek yet — upload a bet slip and sync results
           to see profit tables and charts here.
         </p>

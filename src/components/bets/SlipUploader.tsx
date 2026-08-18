@@ -26,10 +26,10 @@ export default function SlipUploader({
         <img
           src={previewUrl}
           alt="Bet slip preview"
-          className="max-h-64 w-full rounded-xl border border-zinc-200 object-contain dark:border-zinc-800"
+          className="max-h-64 w-full rounded-xl border border-border object-contain"
         />
       ) : (
-        <div className="flex h-40 w-full items-center justify-center rounded-xl border-2 border-dashed border-zinc-300 text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+        <div className="flex h-40 w-full items-center justify-center rounded-xl border-2 border-dashed border-border text-sm text-muted-foreground">
           No photo yet
         </div>
       )}
@@ -45,7 +45,7 @@ export default function SlipUploader({
         type="button"
         onClick={() => inputRef.current?.click()}
         disabled={disabled}
-        className="w-full rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-zinc-900"
+        className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-medium text-brand-foreground transition hover:bg-brand-strong disabled:opacity-50"
       >
         {previewUrl ? "Choose a different photo" : "Upload a screenshot or photo"}
       </button>

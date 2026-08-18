@@ -20,14 +20,19 @@ export default function NavBar({ userName }: { userName: string }) {
   }
 
   return (
-    <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/90 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90">
+    <header className="sticky top-0 z-10 border-b border-border bg-surface-secondary/90 backdrop-blur">
       <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-        <span className="font-semibold">Gamble Gamble Gamble</span>
+        <span className="flex items-center gap-1.5 font-semibold tracking-tight">
+          <span aria-hidden className="text-brand-text">
+            ⚽
+          </span>
+          Gamble Gamble Gamble
+        </span>
         <button
           onClick={switchUser}
-          className="text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"
+          className="text-sm text-muted-foreground transition hover:text-foreground"
         >
-          {userName} · switch
+          {userName} <span className="text-muted-foreground/70">· switch</span>
         </button>
       </div>
       <nav className="mx-auto flex max-w-4xl gap-1 px-2 pb-2">
@@ -39,8 +44,8 @@ export default function NavBar({ userName }: { userName: string }) {
               href={link.href}
               className={`flex-1 rounded-lg px-3 py-2 text-center text-sm font-medium transition ${
                 active
-                  ? "bg-zinc-900 text-white dark:bg-white dark:text-zinc-900"
-                  : "text-zinc-600 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+                  ? "bg-brand text-brand-foreground shadow-sm"
+                  : "text-muted-foreground hover:bg-brand-subtle hover:text-brand-text"
               }`}
             >
               {link.label}

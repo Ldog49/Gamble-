@@ -24,7 +24,7 @@ export default async function WeekPage() {
         <SyncResultsButton />
       </div>
       {gameweek == null ? (
-        <p className="rounded-xl border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700 dark:text-zinc-400">
+        <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
           No fixtures synced yet — tap &quot;Sync results&quot; to load the
           Premier League schedule, then upload a bet.
         </p>
