@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCurrentUser, SessionRequiredError } from "@/lib/session";
 import { BetCreateSchema } from "@/lib/validation/betSchemas";
 import { resolveFixture } from "@/lib/footballData/teamNameMatch";
+import { getCurrentGameweek } from "@/lib/footballData/gameweek";
 import { toBetDTO } from "@/lib/serialize";
 
 export async function GET(request: Request) {
@@ -46,7 +47,14 @@ export async function POST(request: Request) {
   }
   const data = parsed.data;
 
-  const fixture = await resolveFixture(data.homeTeam, data.awayTeam);
+  // Every bet is filed under the app's single "current" gameweek, not
+  // whichever gameweek the matched fixture happens to belong to — this
+  // keeps "this week" locked to one week even if someone uploads a slip
+  // for an older or rescheduled match.
+  const [fixture, gameweek] = await Promise.all([
+    resolveFixture(data.homeTeam, data.awayTeam),
+    getCurrentGameweek(),
+  ]);
 
   const bet = await prisma.bet.create({
     data: {
@@ -64,7 +72,7 @@ export async function POST(request: Request) {
       potentialReturn: data.potentialReturn,
       slipImagePath: data.slipImagePath,
       fixtureId: fixture?.id ?? null,
-      gameweek: fixture?.gameweek ?? null,
+      gameweek,
       status: fixture ? "PENDING" : "NEEDS_REVIEW",
       gradeNote: fixture
         ? null

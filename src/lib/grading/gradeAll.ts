@@ -8,14 +8,12 @@ type BetWithFixture = Bet & { fixture: Fixture | null };
 async function regrade(bet: BetWithFixture) {
   let fixture = bet.fixture;
   let fixtureId = bet.fixtureId;
-  let gameweek = bet.gameweek;
 
   if (!fixture) {
     const resolved = await resolveFixture(bet.homeTeam, bet.awayTeam, bet.createdAt);
     if (resolved) {
       fixture = resolved;
       fixtureId = resolved.id;
-      gameweek = resolved.gameweek;
     }
   }
 
@@ -25,7 +23,6 @@ async function regrade(bet: BetWithFixture) {
     where: { id: bet.id },
     data: {
       fixtureId,
-      gameweek,
       status: result.status,
       gradeNote: result.note,
       gradedAt: result.status === "PENDING" ? null : new Date(),

@@ -1,21 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { toBetDTO } from "@/lib/serialize";
-import { getAvailableGameweeks, getDefaultGameweek } from "@/lib/footballData/gameweek";
+import { getCurrentGameweek } from "@/lib/footballData/gameweek";
 import WeekTable from "@/components/bets/WeekTable";
 import SyncResultsButton from "@/components/bets/SyncResultsButton";
-import GameweekSelect from "@/components/bets/GameweekSelect";
 
-export default async function WeekPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ gameweek?: string }>;
-}) {
-  const { gameweek: gwParam } = await searchParams;
-  const [availableGameweeks, defaultGameweek] = await Promise.all([
-    getAvailableGameweeks(),
-    getDefaultGameweek(),
-  ]);
-  const gameweek = gwParam ? Number(gwParam) : defaultGameweek;
+export default async function WeekPage() {
+  const gameweek = await getCurrentGameweek();
 
   const bets = gameweek
     ? await prisma.bet.findMany({
@@ -28,7 +18,9 @@ export default async function WeekPage({
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between gap-2">
-        <GameweekSelect available={availableGameweeks} current={gameweek} />
+        <h1 className="text-lg font-semibold">
+          {gameweek ? `Gameweek ${gameweek}` : "This Week's Bets"}
+        </h1>
         <SyncResultsButton />
       </div>
       {gameweek == null ? (

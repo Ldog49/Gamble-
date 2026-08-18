@@ -22,7 +22,7 @@ export default function NavBar({ userName }: { userName: string }) {
   return (
     <header className="sticky top-0 z-10 border-b border-zinc-200 bg-white/90 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/90">
       <div className="mx-auto flex max-w-4xl items-center justify-between px-4 py-3">
-        <span className="font-semibold">PL Bet Tracker</span>
+        <span className="font-semibold">Gamble Gamble Gamble</span>
         <button
           onClick={switchUser}
           className="text-sm text-zinc-500 hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200"

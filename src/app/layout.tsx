@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "PL Bet Tracker",
+  title: "Gamble Gamble Gamble",
   description: "Weekly £5 Premier League bets, tracked and graded.",
 };
 

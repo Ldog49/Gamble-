@@ -66,8 +66,8 @@ export default function UploadFlow() {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? "Could not save bet");
       }
-      const bet = await res.json();
-      router.push(bet.gameweek ? `/bets/week?gameweek=${bet.gameweek}` : "/bets/week");
+      await res.json();
+      router.push("/bets/week");
       router.refresh();
     } catch (err) {
       setError((err as Error).message);

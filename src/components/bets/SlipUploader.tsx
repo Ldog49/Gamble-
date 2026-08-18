@@ -37,7 +37,6 @@ export default function SlipUploader({
         ref={inputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={handleChange}
         disabled={disabled}
         className="hidden"
@@ -48,7 +47,7 @@ export default function SlipUploader({
         disabled={disabled}
         className="w-full rounded-xl bg-zinc-900 px-4 py-3 text-sm font-medium text-white disabled:opacity-50 dark:bg-white dark:text-zinc-900"
       >
-        {previewUrl ? "Retake / choose another photo" : "Take or choose a photo"}
+        {previewUrl ? "Choose a different photo" : "Upload a screenshot or photo"}
       </button>
     </div>
   );

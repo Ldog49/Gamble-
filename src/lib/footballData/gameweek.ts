@@ -1,8 +1,11 @@
 import { prisma } from "@/lib/prisma";
 
-/** The gameweek to show by default: the soonest upcoming fixture's gameweek,
- * or the most recent one if the season (or the cached data) has ended. */
-export async function getDefaultGameweek(): Promise<number | null> {
+/** The single "current" gameweek the whole app operates on: the soonest
+ * upcoming fixture's gameweek, or the most recent one once the season (or
+ * the cached data) has ended. Every uploaded bet is filed under this
+ * gameweek regardless of which fixture it matches, and the week view never
+ * shows any other gameweek. */
+export async function getCurrentGameweek(): Promise<number | null> {
   const upcoming = await prisma.fixture.findFirst({
     where: { kickoff: { gte: new Date() } },
     orderBy: { kickoff: "asc" },
@@ -11,13 +14,4 @@ export async function getDefaultGameweek(): Promise<number | null> {
 
   const latest = await prisma.fixture.findFirst({ orderBy: { kickoff: "desc" } });
   return latest?.gameweek ?? null;
-}
-
-export async function getAvailableGameweeks(): Promise<number[]> {
-  const rows = await prisma.fixture.findMany({
-    select: { gameweek: true },
-    distinct: ["gameweek"],
-    orderBy: { gameweek: "asc" },
-  });
-  return rows.map((r) => r.gameweek);
 }
