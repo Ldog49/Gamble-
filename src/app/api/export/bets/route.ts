@@ -1,7 +1,9 @@
+import JSZip from "jszip";
 import { prisma } from "@/lib/prisma";
 import { requireCurrentUser, SessionRequiredError } from "@/lib/session";
 import { computeReturn, computeProfit } from "@/lib/stats/aggregate";
 import { toCsv } from "@/lib/export/csv";
+import { readSlipImage } from "@/lib/storage/slipStorage";
 
 export async function GET() {
   try {
@@ -61,10 +63,28 @@ export async function GET() {
   const csv = toCsv([header, ...rows]);
   const date = new Date().toISOString().slice(0, 10);
 
-  return new Response(csv, {
+  const zip = new JSZip();
+  zip.file("bets.csv", csv);
+  const slipsFolder = zip.folder("slips");
+
+  await Promise.all(
+    bets.map(async (bet) => {
+      try {
+        const buffer = await readSlipImage(bet.slipImagePath);
+        const ext = bet.slipImagePath.split(".").pop() || "jpg";
+        slipsFolder?.file(`gw${bet.gameweek ?? "unknown"}-${bet.user.name}-${bet.id}.${ext}`, buffer);
+      } catch {
+        // Photo missing from storage — backup is best-effort, skip it.
+      }
+    })
+  );
+
+  const zipBuffer = await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" });
+
+  return new Response(new Uint8Array(zipBuffer), {
     headers: {
-      "Content-Type": "text/csv; charset=utf-8",
-      "Content-Disposition": `attachment; filename="bets-backup-${date}.csv"`,
+      "Content-Type": "application/zip",
+      "Content-Disposition": `attachment; filename="bets-backup-${date}.zip"`,
     },
   });
 }

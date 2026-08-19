@@ -49,7 +49,7 @@ export default async function SummaryPage() {
         href="/api/export/bets"
         className="self-start rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition hover:bg-surface-secondary hover:text-foreground"
       >
-        Download backup (CSV)
+        Download backup (CSV + slip photos)
       </a>
     </div>
   );
