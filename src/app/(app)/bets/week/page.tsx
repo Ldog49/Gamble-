@@ -3,17 +3,24 @@ import { toBetDTO } from "@/lib/serialize";
 import { getCurrentGameweek } from "@/lib/footballData/gameweek";
 import WeekTable from "@/components/bets/WeekTable";
 import SyncResultsButton from "@/components/bets/SyncResultsButton";
+import GameweekFixtures from "@/components/bets/GameweekFixtures";
 
 export default async function WeekPage() {
   const gameweek = await getCurrentGameweek();
 
-  const bets = gameweek
-    ? await prisma.bet.findMany({
-        where: { gameweek },
-        include: { user: true },
-        orderBy: { createdAt: "asc" },
-      })
-    : [];
+  const [bets, fixtures] = gameweek
+    ? await Promise.all([
+        prisma.bet.findMany({
+          where: { gameweek },
+          include: { user: true },
+          orderBy: { createdAt: "asc" },
+        }),
+        prisma.fixture.findMany({
+          where: { gameweek },
+          orderBy: { kickoff: "asc" },
+        }),
+      ])
+    : [[], []];
 
   return (
     <div className="flex flex-col gap-4">
@@ -29,7 +36,10 @@ export default async function WeekPage() {
           Premier League schedule, then upload a bet.
         </p>
       ) : (
-        <WeekTable bets={bets.map(toBetDTO)} />
+        <>
+          <GameweekFixtures fixtures={fixtures} />
+          <WeekTable bets={bets.map(toBetDTO)} />
+        </>
       )}
     </div>
   );

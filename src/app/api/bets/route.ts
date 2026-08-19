@@ -56,30 +56,55 @@ export async function POST(request: Request) {
     getCurrentGameweek(),
   ]);
 
-  const bet = await prisma.bet.create({
-    data: {
-      userId: user.id,
-      rawExtraction: (data.rawExtraction ?? undefined) as
-        | Prisma.InputJsonValue
-        | undefined,
-      betType: data.betType,
-      betTypeRaw: data.betTypeRaw ?? null,
-      homeTeam: data.homeTeam,
-      awayTeam: data.awayTeam,
-      selection: data.selection,
-      odds: data.odds,
-      stake: data.stake,
-      potentialReturn: data.potentialReturn,
-      slipImagePath: data.slipImagePath,
-      fixtureId: fixture?.id ?? null,
-      gameweek,
-      status: fixture ? "PENDING" : "NEEDS_REVIEW",
-      gradeNote: fixture
-        ? null
-        : "No matching fixture found for these teams this season — check the team names, or this match may not be in the Premier League this season",
-    },
-    include: { user: true },
-  });
+  if (gameweek != null) {
+    const existing = await prisma.bet.findFirst({
+      where: { userId: user.id, gameweek },
+    });
+    if (existing) {
+      return NextResponse.json(
+        { error: `You've already got a bet in for Gameweek ${gameweek} — one per person per week.` },
+        { status: 409 }
+      );
+    }
+  }
+
+  let bet;
+  try {
+    bet = await prisma.bet.create({
+      data: {
+        userId: user.id,
+        rawExtraction: (data.rawExtraction ?? undefined) as
+          | Prisma.InputJsonValue
+          | undefined,
+        betType: data.betType,
+        betTypeRaw: data.betTypeRaw ?? null,
+        homeTeam: data.homeTeam,
+        awayTeam: data.awayTeam,
+        selection: data.selection,
+        odds: data.odds,
+        stake: data.stake,
+        potentialReturn: data.potentialReturn,
+        slipImagePath: data.slipImagePath,
+        fixtureId: fixture?.id ?? null,
+        gameweek,
+        status: fixture ? "PENDING" : "NEEDS_REVIEW",
+        gradeNote: fixture
+          ? null
+          : "No matching fixture found for these teams this season — check the team names, or this match may not be in the Premier League this season",
+      },
+      include: { user: true },
+    });
+  } catch (err) {
+    // Race-condition fallback if two uploads for the same gameweek land at
+    // the same instant — the DB-level unique constraint is the real guard.
+    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
+      return NextResponse.json(
+        { error: `You've already got a bet in for Gameweek ${gameweek} — one per person per week.` },
+        { status: 409 }
+      );
+    }
+    throw err;
+  }
 
   return NextResponse.json(toBetDTO(bet), { status: 201 });
 }

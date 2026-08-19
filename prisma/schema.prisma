@@ -70,7 +70,10 @@ model Bet {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@index([userId, gameweek])
+  // One £5 bet per person per gameweek. Bets with gameweek = null (no
+  // fixtures synced yet) aren't constrained by this — Postgres treats each
+  // NULL as distinct — but the app never lets that state persist for long.
+  @@unique([userId, gameweek])
   @@index([gameweek])
   @@index([status])
 }
