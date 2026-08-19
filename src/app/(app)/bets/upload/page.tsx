@@ -39,5 +39,5 @@ export default async function UploadPage() {
     );
   }
 
-  return <UploadFlow />;
+  return <UploadFlow userName={user?.name ?? ""} />;
 }

@@ -8,8 +8,9 @@ import BetConfirmForm, {
   type BetFormValues,
 } from "./BetConfirmForm";
 import type { ParsedSlip } from "@/types";
+import { pickInsult } from "@/lib/insults";
 
-type Step = "upload" | "parsing" | "confirm" | "saving";
+type Step = "upload" | "parsing" | "confirm" | "saving" | "insulted";
 
 interface BetPayload {
   slipImagePath: string;
@@ -24,13 +25,14 @@ interface BetPayload {
   potentialReturn: number;
 }
 
-export default function UploadFlow() {
+export default function UploadFlow({ userName }: { userName: string }) {
   const router = useRouter();
   const [step, setStep] = useState<Step>("upload");
   const [slipImagePath, setSlipImagePath] = useState<string | null>(null);
   const [extraction, setExtraction] = useState<ParsedSlip | null>(null);
   const [parseWarning, setParseWarning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [insult, setInsult] = useState<string | null>(null);
 
   async function postBet(payload: BetPayload): Promise<boolean> {
     setStep("saving");
@@ -46,13 +48,18 @@ export default function UploadFlow() {
         throw new Error(data.error ?? "Could not save bet");
       }
       await res.json();
-      router.push("/bets/week");
-      router.refresh();
+      setInsult(pickInsult(userName, payload.odds));
+      setStep("insulted");
       return true;
     } catch (err) {
       setError((err as Error).message);
       return false;
     }
+  }
+
+  function handleContinue() {
+    router.push("/bets/week");
+    router.refresh();
   }
 
   async function handleFile(file: File) {
@@ -113,6 +120,23 @@ export default function UploadFlow() {
       potentialReturn: Number(values.potentialReturn),
     });
     if (!saved) setStep("confirm");
+  }
+
+  if (step === "insulted" && insult) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 rounded-xl border border-danger/30 bg-danger-subtle p-6 text-center">
+        <span aria-hidden className="text-4xl">
+          🤡
+        </span>
+        <p className="text-lg font-semibold text-foreground">{insult}</p>
+        <button
+          onClick={handleContinue}
+          className="rounded-xl bg-brand px-6 py-3 text-sm font-medium text-brand-foreground transition hover:bg-brand-strong"
+        >
+          Fine, whatever
+        </button>
+      </div>
+    );
   }
 
   return (
