@@ -2,17 +2,19 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { isAdminUser } from "@/lib/admin";
 
-const LINKS = [
+const BASE_LINKS = [
   { href: "/bets/upload", label: "Upload" },
   { href: "/bets/week", label: "This Week" },
   { href: "/summary", label: "Summary" },
-  { href: "/admin", label: "Admin" },
 ];
+const ADMIN_LINK = { href: "/admin", label: "Admin" };
 
 export default function NavBar({ userName }: { userName: string }) {
   const pathname = usePathname();
   const router = useRouter();
+  const links = isAdminUser(userName) ? [...BASE_LINKS, ADMIN_LINK] : BASE_LINKS;
 
   async function switchUser() {
     await fetch("/api/session", { method: "DELETE" });
@@ -37,7 +39,7 @@ export default function NavBar({ userName }: { userName: string }) {
         </button>
       </div>
       <nav className="mx-auto flex max-w-4xl gap-1 px-2 pb-2">
-        {LINKS.map((link) => {
+        {links.map((link) => {
           const active = pathname === link.href || pathname?.startsWith(`${link.href}/`);
           return (
             <Link

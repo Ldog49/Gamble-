@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCurrentUser, SessionRequiredError } from "@/lib/session";
 import { BetUpdateSchema } from "@/lib/validation/betSchemas";
 import { toBetDTO } from "@/lib/serialize";
+import { isAdminUser } from "@/lib/admin";
 
 export async function PATCH(
   request: Request,
@@ -66,13 +67,17 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  let user;
   try {
-    await requireCurrentUser();
+    user = await requireCurrentUser();
   } catch (err) {
     if (err instanceof SessionRequiredError) {
       return NextResponse.json({ error: "Not logged in" }, { status: 401 });
     }
     throw err;
+  }
+  if (!isAdminUser(user.name)) {
+    return NextResponse.json({ error: "Not allowed" }, { status: 403 });
   }
 
   const { id } = await params;
