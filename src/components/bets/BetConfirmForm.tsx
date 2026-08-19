@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BET_TYPES, BET_TYPE_LABELS, type BetType, type ParsedSlip } from "@/types";
+import { parseOddsInput } from "@/lib/odds";
 
 export interface BetFormValues {
   betType: BetType;
@@ -63,14 +64,30 @@ export default function BetConfirmForm({
   submitting: boolean;
 }) {
   const [values, setValues] = useState<BetFormValues>(() => defaultsFromExtraction(extraction));
+  const [oddsError, setOddsError] = useState<string | null>(null);
 
   function update<K extends keyof BetFormValues>(key: K, value: BetFormValues[K]) {
     setValues((v) => ({ ...v, [key]: value }));
   }
 
+  function handleOddsBlur() {
+    const parsed = parseOddsInput(values.odds);
+    if (parsed != null) {
+      update("odds", String(parsed));
+      setOddsError(null);
+    } else if (values.odds.trim()) {
+      setOddsError("Enter odds as a decimal (1.85) or fraction (6/4)");
+    }
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    onSubmit(values);
+    const parsedOdds = parseOddsInput(values.odds);
+    if (parsedOdds == null) {
+      setOddsError("Enter odds as a decimal (1.85) or fraction (6/4)");
+      return;
+    }
+    onSubmit({ ...values, odds: String(parsedOdds) });
   }
 
   return (
@@ -137,14 +154,19 @@ export default function BetConfirmForm({
       <div className="grid grid-cols-3 gap-3">
         <Field label="Odds">
           <input
-            type="number"
-            step="0.01"
-            min="1"
+            type="text"
+            inputMode="text"
+            placeholder="1.85 or 6/4"
             value={values.odds}
-            onChange={(e) => update("odds", e.target.value)}
+            onChange={(e) => {
+              update("odds", e.target.value);
+              if (oddsError) setOddsError(null);
+            }}
+            onBlur={handleOddsBlur}
             required
             className={inputClass}
           />
+          {oddsError && <span className="text-xs text-danger">{oddsError}</span>}
         </Field>
         <Field label="Stake (£)">
           <input
