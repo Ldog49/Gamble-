@@ -3,7 +3,7 @@ import type { SummaryResponse, UserProfitCell } from "@/types";
 
 export type BetWithUser = Bet & { user: Pick<User, "id" | "name"> };
 
-function computeReturn(bet: Pick<Bet, "status" | "stake" | "potentialReturn">): number {
+export function computeReturn(bet: Pick<Bet, "status" | "stake" | "potentialReturn">): number {
   const stake = Number(bet.stake);
   const potentialReturn = Number(bet.potentialReturn);
   switch (bet.status) {

@@ -40,7 +40,15 @@ export default async function SummaryPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <h1 className="text-lg font-semibold">Season Summary</h1>
+      <div className="flex items-center justify-between gap-2">
+        <h1 className="text-lg font-semibold">Season Summary</h1>
+        <a
+          href="/api/export/bets"
+          className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted-foreground transition hover:bg-surface-secondary hover:text-foreground"
+        >
+          Download backup (CSV)
+        </a>
+      </div>
       <StandingsTable rows={standings} throughGameweek={throughGameweek} />
       <ProfitByGameweekChart summary={summary} />
       <CumulativeProfitChart summary={summary} />

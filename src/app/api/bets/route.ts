@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 import { requireCurrentUser, SessionRequiredError } from "@/lib/session";
 import { BetCreateSchema } from "@/lib/validation/betSchemas";
 import { resolveFixture } from "@/lib/footballData/teamNameMatch";
-import { getCurrentGameweek } from "@/lib/footballData/gameweek";
+import { getCurrentGameweek, getGameweekLockTime } from "@/lib/footballData/gameweek";
+import { formatKickoff } from "@/lib/format";
 import { toBetDTO } from "@/lib/serialize";
 
 export async function GET(request: Request) {
@@ -57,6 +58,16 @@ export async function POST(request: Request) {
   ]);
 
   if (gameweek != null) {
+    const lockTime = await getGameweekLockTime(gameweek);
+    if (lockTime && new Date() >= lockTime) {
+      return NextResponse.json(
+        {
+          error: `Too late — the first game of Gameweek ${gameweek} kicked off at ${formatKickoff(lockTime)}. Betting is closed.`,
+        },
+        { status: 409 }
+      );
+    }
+
     const existing = await prisma.bet.findFirst({
       where: { userId: user.id, gameweek },
     });

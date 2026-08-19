@@ -15,3 +15,13 @@ export async function getCurrentGameweek(): Promise<number | null> {
   const latest = await prisma.fixture.findFirst({ orderBy: { kickoff: "desc" } });
   return latest?.gameweek ?? null;
 }
+
+/** Kickoff time of the first fixture in a gameweek — betting closes the
+ * instant this passes, so this is the single source of truth for the lock. */
+export async function getGameweekLockTime(gameweek: number): Promise<Date | null> {
+  const first = await prisma.fixture.findFirst({
+    where: { gameweek },
+    orderBy: { kickoff: "asc" },
+  });
+  return first?.kickoff ?? null;
+}
