@@ -14,6 +14,8 @@ export default function LoginPage() {
   const [newName, setNewName] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [passwordFor, setPasswordFor] = useState<UserOption | null>(null);
+  const [password, setPassword] = useState("");
 
   useEffect(() => {
     fetch("/api/users")
@@ -22,15 +24,25 @@ export default function LoginPage() {
       .catch(() => setError("Could not load users."));
   }, []);
 
-  async function pickUser(user: UserOption) {
+  async function pickUser(user: UserOption, enteredPassword?: string) {
     setError(null);
     setBusyId(user.id);
     try {
       const res = await fetch("/api/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: user.id }),
+        body: JSON.stringify({ userId: user.id, password: enteredPassword }),
       });
+      if (res.status === 401) {
+        const data = await res.json().catch(() => ({}));
+        if (data.passwordRequired) {
+          setPasswordFor(user);
+          setPassword("");
+          setError(enteredPassword ? "Incorrect password." : null);
+          setBusyId(null);
+          return;
+        }
+      }
       if (!res.ok) throw new Error("Could not log in");
       router.push("/bets/week");
       router.refresh();
@@ -87,19 +99,47 @@ export default function LoginPage() {
               No one&apos;s here yet — add yourself below.
             </p>
           )}
-          {users?.map((user) => (
-            <button
-              key={user.id}
-              onClick={() => pickUser(user)}
-              disabled={busyId !== null}
-              className="w-full rounded-xl border border-border px-4 py-3 text-left font-medium transition hover:border-brand hover:bg-brand-subtle disabled:opacity-50"
-            >
-              {user.name}
-              {busyId === user.id && (
-                <span className="ml-2 text-xs text-muted-foreground">signing in…</span>
-              )}
-            </button>
-          ))}
+          {users?.map((user) =>
+            passwordFor?.id === user.id ? (
+              <form
+                key={user.id}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  pickUser(user, password);
+                }}
+                className="flex items-center gap-2 rounded-xl border border-brand bg-brand-subtle px-3 py-2"
+              >
+                <span className="font-medium">{user.name}</span>
+                <input
+                  type="password"
+                  autoFocus
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Password"
+                  className="min-w-0 flex-1 rounded-lg border border-border bg-background px-2 py-1.5 text-sm outline-none focus:border-brand"
+                />
+                <button
+                  type="submit"
+                  disabled={busyId !== null || !password}
+                  className="rounded-lg bg-brand px-3 py-1.5 text-sm font-medium text-brand-foreground transition hover:bg-brand-strong disabled:opacity-50"
+                >
+                  Go
+                </button>
+              </form>
+            ) : (
+              <button
+                key={user.id}
+                onClick={() => pickUser(user)}
+                disabled={busyId !== null}
+                className="w-full rounded-xl border border-border px-4 py-3 text-left font-medium transition hover:border-brand hover:bg-brand-subtle disabled:opacity-50"
+              >
+                {user.name}
+                {busyId === user.id && (
+                  <span className="ml-2 text-xs text-muted-foreground">signing in…</span>
+                )}
+              </button>
+            )
+          )}
         </div>
 
         <form onSubmit={createUser} className="mt-5 flex gap-2 border-t border-border pt-5">
