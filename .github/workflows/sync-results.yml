@@ -1,0 +1,18 @@
+name: Sync Premier League results
+
+on:
+  schedule:
+    # Every 2 hours. GitHub's scheduler is best-effort (can run a few
+    # minutes late), which is fine for this — it just needs to catch up
+    # results within a couple of hours of full time.
+    - cron: "0 */2 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger results sync
+        run: |
+          curl -sf -X POST "https://pl-bets.up.railway.app/api/fixtures/sync" \
+            -H "Authorization: Bearer ${{ secrets.SYNC_SECRET }}"

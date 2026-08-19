@@ -19,6 +19,7 @@ session kept in a signed cookie.
    - `ANTHROPIC_API_KEY` — from console.anthropic.com (used to read slip photos)
    - `FOOTBALL_DATA_API_KEY` — free key from football-data.org (used for fixtures/results)
    - `SESSION_SECRET` — random string, e.g. `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+   - `SYNC_SECRET` — random string used by the scheduled results-sync job (see below)
 3. `npm install`
 4. `npm run db:migrate` — applies the schema
 5. `npm run db:seed` — creates a couple of test users (edit `prisma/seed.ts` to change them)
@@ -45,13 +46,20 @@ session kept in a signed cookie.
 3. Add a Postgres plugin to the project (New → Database → PostgreSQL).
 4. On the web service, set env vars: `DATABASE_URL` (reference the Postgres
    plugin's `DATABASE_URL`), `ANTHROPIC_API_KEY`, `FOOTBALL_DATA_API_KEY`,
-   `SESSION_SECRET`, `FOOTBALL_DATA_SEASON`, and `SLIP_STORAGE_PATH=/data/slips`.
+   `SESSION_SECRET`, `SYNC_SECRET`, `FOOTBALL_DATA_SEASON`, and
+   `SLIP_STORAGE_PATH=/data/slips`.
 5. Add a Volume to the web service mounted at `/data` (Settings → Volumes) —
    this is where uploaded slip photos persist across deploys.
 6. Push to `main` to trigger the first deploy. The start command
    (`prisma migrate deploy && next start`) applies migrations automatically
    on every deploy.
 
-To keep results fresh automatically, add a Railway Cron Schedule that calls
-`POST /api/fixtures/sync` on a schedule (not set up by default — the "Sync
-results" button on the This Week page covers this manually for now).
+## Automatic results syncing
+
+`.github/workflows/sync-results.yml` calls `POST /api/fixtures/sync` every 2
+hours via a GitHub Actions scheduled workflow, authenticated with a shared
+secret (`Authorization: Bearer <SYNC_SECRET>`) instead of a user session.
+For this to work, add a repository secret named `SYNC_SECRET` in GitHub
+(Settings → Secrets and variables → Actions) with the same value as the
+`SYNC_SECRET` env var set on Railway. The manual "Sync results" button on
+the This Week page still works independently for an immediate refresh.
