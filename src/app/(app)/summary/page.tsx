@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { aggregateSummary } from "@/lib/stats/aggregate";
+import { aggregateStandings } from "@/lib/stats/standings";
+import StandingsTable from "@/components/summary/StandingsTable";
 import GameweekSummaryTable from "@/components/summary/GameweekSummaryTable";
 import ProfitByGameweekChart from "@/components/summary/ProfitByGameweekChart";
 import CumulativeProfitChart from "@/components/summary/CumulativeProfitChart";
@@ -10,10 +12,8 @@ export default async function SummaryPage() {
     prisma.bet.findMany({ include: { user: true } }),
   ]);
 
-  const summary = aggregateSummary(
-    bets,
-    users.map((u) => u.name)
-  );
+  const userNames = users.map((u) => u.name);
+  const summary = aggregateSummary(bets, userNames);
 
   if (summary.byGameweek.length === 0) {
     return (
@@ -27,9 +27,13 @@ export default async function SummaryPage() {
     );
   }
 
+  const standings = aggregateStandings(bets, userNames);
+  const throughGameweek = summary.byGameweek[summary.byGameweek.length - 1].gameweek;
+
   return (
     <div className="flex flex-col gap-6">
       <h1 className="text-lg font-semibold">Season Summary</h1>
+      <StandingsTable rows={standings} throughGameweek={throughGameweek} />
       <ProfitByGameweekChart summary={summary} />
       <CumulativeProfitChart summary={summary} />
       <GameweekSummaryTable summary={summary} />

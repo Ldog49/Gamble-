@@ -1,15 +1,22 @@
 import { normalizeTeamName, teamCandidateStrings } from "@/lib/footballData/teamNameMatch";
 import type { FinalScore, MatcherOutcome } from "../types";
 
-function sideFromSelection(
+/**
+ * Determines which side a match-result selection refers to, from the
+ * selection text alone (no score needed). Exported for reuse by the
+ * season standings aggregation (home/away/draw pick counts), not just
+ * grading.
+ */
+export function classifySide(
   selection: string,
-  score: FinalScore
+  homeTeam: string,
+  awayTeam: string
 ): "home" | "away" | "draw" | null {
   const normalizedSelection = normalizeTeamName(selection);
   if (/\bdraw\b|\btie\b/.test(normalizedSelection)) return "draw";
 
-  const homeCandidates = teamCandidateStrings(score.homeTeam);
-  const awayCandidates = teamCandidateStrings(score.awayTeam);
+  const homeCandidates = teamCandidateStrings(homeTeam);
+  const awayCandidates = teamCandidateStrings(awayTeam);
 
   const mentionsHome = homeCandidates.some((c) => normalizedSelection.includes(c));
   const mentionsAway = awayCandidates.some((c) => normalizedSelection.includes(c));
@@ -21,7 +28,7 @@ function sideFromSelection(
 
 export function gradeMatchResult(selection: string, score: FinalScore): MatcherOutcome {
   const scoreline = `${score.homeTeam} ${score.home}-${score.away} ${score.awayTeam}`;
-  const side = sideFromSelection(selection, score);
+  const side = classifySide(selection, score.homeTeam, score.awayTeam);
 
   if (!side) {
     return {
