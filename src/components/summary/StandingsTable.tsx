@@ -51,7 +51,7 @@ export default function StandingsTable({
             {rows.map((row, i) => (
               <tr key={row.userName} className={i === 0 ? "bg-brand-subtle/40" : "bg-surface"}>
                 <td className="px-3 py-2.5 font-semibold text-muted-foreground">
-                  {RANK_MEDALS[i] ?? i + 1}
+                  {i === rows.length - 1 && rows.length > 3 ? "👟" : RANK_MEDALS[i] ?? i + 1}
                 </td>
                 <td className="px-3 py-2.5 font-semibold">{row.userName}</td>
                 <td className={`px-3 py-2.5 text-right font-bold ${profitClass(row.runningProfit)}`}>
