@@ -11,6 +11,7 @@ export interface BetDetail {
   awayTeam: string;
   selection: string;
   odds: number;
+  potentialReturn: number;
 }
 
 export default function GameweekSummaryTable({
@@ -60,6 +61,7 @@ export default function GameweekSummaryTable({
               <th className="px-3 py-2">Bet</th>
               <th className="px-3 py-2 text-right">Odds</th>
               <th className="px-3 py-2 text-right">Stake</th>
+              <th className="px-3 py-2 text-right">Potential Return</th>
               <th className="px-3 py-2 text-right">Return</th>
               <th className="px-3 py-2 text-right">Profit</th>
               <th className="px-3 py-2 text-right">Cumulative</th>
@@ -86,6 +88,9 @@ export default function GameweekSummaryTable({
                     </td>
                     <td className="px-3 py-2 text-right">
                       {cell.stake ? `£${cell.stake.toFixed(2)}` : "—"}
+                    </td>
+                    <td className="px-3 py-2 text-right">
+                      {detail ? `£${detail.potentialReturn.toFixed(2)}` : "—"}
                     </td>
                     <td className="px-3 py-2 text-right">
                       {cell.return ? `£${cell.return.toFixed(2)}` : "—"}

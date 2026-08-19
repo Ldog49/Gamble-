@@ -36,6 +36,7 @@ export default async function SummaryPage() {
     awayTeam: bet.awayTeam,
     selection: bet.selection,
     odds: Number(bet.odds),
+    potentialReturn: Number(bet.potentialReturn),
   }));
 
   return (
