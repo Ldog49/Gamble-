@@ -1,9 +1,27 @@
 import type { SummaryResponse } from "@/types";
 import { formatMoney, profitClass } from "@/lib/format";
 
-export default function GameweekSummaryTable({ summary }: { summary: SummaryResponse }) {
+export interface BetDetail {
+  gameweek: number | null;
+  userName: string;
+  homeTeam: string;
+  awayTeam: string;
+  selection: string;
+  odds: number;
+}
+
+export default function GameweekSummaryTable({
+  summary,
+  betDetails,
+}: {
+  summary: SummaryResponse;
+  betDetails: BetDetail[];
+}) {
   const cumulativeByGw = new Map(
     summary.cumulativeByGameweek.map((row) => [row.gameweek, row])
+  );
+  const detailByGwUser = new Map(
+    betDetails.map((d) => [`${d.gameweek}-${d.userName}`, d])
   );
 
   return (
@@ -13,6 +31,10 @@ export default function GameweekSummaryTable({ summary }: { summary: SummaryResp
           <tr>
             <th className="px-3 py-2">GW</th>
             <th className="px-3 py-2">User</th>
+            <th className="px-3 py-2">Home</th>
+            <th className="px-3 py-2">Away</th>
+            <th className="px-3 py-2">Bet</th>
+            <th className="px-3 py-2 text-right">Odds</th>
             <th className="px-3 py-2 text-right">Stake</th>
             <th className="px-3 py-2 text-right">Return</th>
             <th className="px-3 py-2 text-right">Profit</th>
@@ -24,10 +46,17 @@ export default function GameweekSummaryTable({ summary }: { summary: SummaryResp
             summary.users.map((user) => {
               const cell = gw.perUser[user];
               const cumulative = cumulativeByGw.get(gw.gameweek)?.[user] ?? null;
+              const detail = detailByGwUser.get(`${gw.gameweek}-${user}`);
               return (
                 <tr key={`${gw.gameweek}-${user}`} className="bg-surface">
                   <td className="px-3 py-2 text-muted-foreground">{gw.gameweek}</td>
                   <td className="px-3 py-2 font-medium">{user}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{detail?.homeTeam ?? "—"}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{detail?.awayTeam ?? "—"}</td>
+                  <td className="px-3 py-2">{detail?.selection ?? "—"}</td>
+                  <td className="px-3 py-2 text-right">
+                    {detail ? detail.odds.toFixed(2) : "—"}
+                  </td>
                   <td className="px-3 py-2 text-right">
                     {cell.stake ? `£${cell.stake.toFixed(2)}` : "—"}
                   </td>

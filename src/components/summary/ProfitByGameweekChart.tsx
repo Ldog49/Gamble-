@@ -44,7 +44,12 @@ export default function ProfitByGameweekChart({ summary }: { summary: SummaryRes
             />
             <Legend wrapperStyle={{ fontSize: 12, color: "var(--muted-foreground)" }} />
             {summary.users.map((user, i) => (
-              <Bar key={user} dataKey={user} fill={colorForUser(i)} radius={[3, 3, 0, 0]} />
+              <Bar
+                key={user}
+                dataKey={user}
+                fill={colorForUser(i, summary.users.length)}
+                radius={[3, 3, 0, 0]}
+              />
             ))}
           </BarChart>
         </ResponsiveContainer>

@@ -29,6 +29,14 @@ export default async function SummaryPage() {
 
   const standings = aggregateStandings(bets, userNames);
   const throughGameweek = summary.byGameweek[summary.byGameweek.length - 1].gameweek;
+  const betDetails = bets.map((bet) => ({
+    gameweek: bet.gameweek,
+    userName: bet.user.name,
+    homeTeam: bet.homeTeam,
+    awayTeam: bet.awayTeam,
+    selection: bet.selection,
+    odds: Number(bet.odds),
+  }));
 
   return (
     <div className="flex flex-col gap-6">
@@ -36,7 +44,7 @@ export default async function SummaryPage() {
       <StandingsTable rows={standings} throughGameweek={throughGameweek} />
       <ProfitByGameweekChart summary={summary} />
       <CumulativeProfitChart summary={summary} />
-      <GameweekSummaryTable summary={summary} />
+      <GameweekSummaryTable summary={summary} betDetails={betDetails} />
     </div>
   );
 }

@@ -47,7 +47,7 @@ export default function CumulativeProfitChart({ summary }: { summary: SummaryRes
                 key={user}
                 type="monotone"
                 dataKey={user}
-                stroke={colorForUser(i)}
+                stroke={colorForUser(i, summary.users.length)}
                 strokeWidth={2}
                 dot={{ r: 3 }}
                 connectNulls
