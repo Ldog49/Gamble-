@@ -15,19 +15,19 @@ export interface BetFormValues {
   potentialReturn: string;
 }
 
-function defaultsFromExtraction(extraction: ParsedSlip | null): BetFormValues {
-  if (!extraction) {
-    return {
-      betType: "MATCH_RESULT",
-      betTypeRaw: "",
-      homeTeam: "",
-      awayTeam: "",
-      selection: "",
-      odds: "",
-      stake: "5",
-      potentialReturn: "",
-    };
-  }
+export const BLANK_BET_FORM_VALUES: BetFormValues = {
+  betType: "MATCH_RESULT",
+  betTypeRaw: "",
+  homeTeam: "",
+  awayTeam: "",
+  selection: "",
+  odds: "",
+  stake: "5",
+  potentialReturn: "",
+};
+
+export function betFormValuesFromExtraction(extraction: ParsedSlip | null): BetFormValues {
+  if (!extraction) return BLANK_BET_FORM_VALUES;
   return {
     betType: extraction.betType,
     betTypeRaw: extraction.betTypeRaw ?? "",
@@ -53,17 +53,25 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export default function BetConfirmForm({
-  extraction,
+  initialValues,
   parseWarning,
+  notes,
+  lowConfidence,
   onSubmit,
+  onCancel,
   submitting,
+  submitLabel = "Save bet",
 }: {
-  extraction: ParsedSlip | null;
+  initialValues: BetFormValues;
   parseWarning?: string | null;
+  notes?: string | null;
+  lowConfidence?: boolean;
   onSubmit: (values: BetFormValues) => void;
+  onCancel?: () => void;
   submitting: boolean;
+  submitLabel?: string;
 }) {
-  const [values, setValues] = useState<BetFormValues>(() => defaultsFromExtraction(extraction));
+  const [values, setValues] = useState<BetFormValues>(initialValues);
   const [oddsError, setOddsError] = useState<string | null>(null);
 
   function update<K extends keyof BetFormValues>(key: K, value: BetFormValues[K]) {
@@ -97,12 +105,12 @@ export default function BetConfirmForm({
           {parseWarning} Fill in the details below manually.
         </p>
       )}
-      {extraction?.notes && (
+      {notes && (
         <p className="rounded-lg bg-info-subtle px-3 py-2 text-sm text-info">
-          Note from auto-read: {extraction.notes}
+          Note from auto-read: {notes}
         </p>
       )}
-      {extraction?.confidence === "low" && (
+      {lowConfidence && (
         <p className="rounded-lg bg-warning-subtle px-3 py-2 text-sm text-warning">
           Low confidence read — please double-check every field below.
         </p>
@@ -192,13 +200,24 @@ export default function BetConfirmForm({
         </Field>
       </div>
 
-      <button
-        type="submit"
-        disabled={submitting}
-        className="mt-2 w-full rounded-xl bg-brand px-4 py-3 text-sm font-medium text-brand-foreground transition hover:bg-brand-strong disabled:opacity-50"
-      >
-        {submitting ? "Saving…" : "Save bet"}
-      </button>
+      <div className="mt-2 flex gap-2">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 rounded-xl border border-border px-4 py-3 text-sm font-medium transition hover:bg-surface-secondary"
+          >
+            Cancel
+          </button>
+        )}
+        <button
+          type="submit"
+          disabled={submitting}
+          className="flex-1 rounded-xl bg-brand px-4 py-3 text-sm font-medium text-brand-foreground transition hover:bg-brand-strong disabled:opacity-50"
+        >
+          {submitting ? "Saving…" : submitLabel}
+        </button>
+      </div>
     </form>
   );
 }

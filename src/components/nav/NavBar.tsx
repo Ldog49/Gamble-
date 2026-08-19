@@ -7,6 +7,7 @@ const LINKS = [
   { href: "/bets/upload", label: "Upload" },
   { href: "/bets/week", label: "This Week" },
   { href: "/summary", label: "Summary" },
+  { href: "/admin", label: "Admin" },
 ];
 
 export default function NavBar({ userName }: { userName: string }) {

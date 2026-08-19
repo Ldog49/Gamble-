@@ -3,7 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import SlipUploader from "./SlipUploader";
-import BetConfirmForm, { type BetFormValues } from "./BetConfirmForm";
+import BetConfirmForm, {
+  betFormValuesFromExtraction,
+  type BetFormValues,
+} from "./BetConfirmForm";
 import type { ParsedSlip } from "@/types";
 
 type Step = "upload" | "parsing" | "confirm" | "saving";
@@ -132,8 +135,10 @@ export default function UploadFlow() {
 
       {step === "confirm" && (
         <BetConfirmForm
-          extraction={extraction}
+          initialValues={betFormValuesFromExtraction(extraction)}
           parseWarning={parseWarning}
+          notes={extraction?.notes ?? null}
+          lowConfidence={extraction?.confidence === "low"}
           onSubmit={handleManualSave}
           submitting={false}
         />
