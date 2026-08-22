@@ -47,7 +47,15 @@ export function teamCandidateStrings(teamName: string): string[] {
   const nicknames = Object.entries(NICKNAME_ALIASES)
     .filter(([, value]) => value === canonical)
     .map(([key]) => key);
-  return Array.from(new Set([canonical, ...nicknames]));
+  // Most selections just name the club's distinctive word ("Leeds to win"
+  // for Leeds United, "Ipswich to win" for Ipswich Town) rather than the
+  // full canonical name — include each significant word on its own so those
+  // aren't left needing manual review. Ambiguous within a single fixture
+  // (e.g. two "United" sides) still correctly falls through to review,
+  // since classifySide only calls this a match when exactly one side
+  // matches.
+  const words = canonical.split(" ").filter((w) => w.length >= 4);
+  return Array.from(new Set([canonical, ...nicknames, ...words]));
 }
 
 function levenshtein(a: string, b: string): number {
