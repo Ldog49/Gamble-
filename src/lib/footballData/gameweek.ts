@@ -25,3 +25,27 @@ export async function getGameweekLockTime(gameweek: number): Promise<Date | null
   });
   return first?.kickoff ?? null;
 }
+
+/** Every gameweek whose first fixture has already kicked off. Anyone with no
+ * bet in one of these has missed their window for good — the standings
+ * treat that as a forfeited stake. */
+export async function getLockedGameweeks(): Promise<Set<number>> {
+  const fixtures = await prisma.fixture.findMany({
+    select: { gameweek: true, kickoff: true },
+    orderBy: { kickoff: "asc" },
+  });
+
+  const firstKickoffByGameweek = new Map<number, Date>();
+  for (const fixture of fixtures) {
+    if (!firstKickoffByGameweek.has(fixture.gameweek)) {
+      firstKickoffByGameweek.set(fixture.gameweek, fixture.kickoff);
+    }
+  }
+
+  const now = new Date();
+  const locked = new Set<number>();
+  for (const [gameweek, kickoff] of firstKickoffByGameweek) {
+    if (kickoff <= now) locked.add(gameweek);
+  }
+  return locked;
+}

@@ -74,7 +74,10 @@ export default function GameweekSummaryTable({
                 const cumulative = cumulativeByGw.get(gw.gameweek)?.[user] ?? null;
                 const detail = detailByGwUser.get(`${gw.gameweek}-${user}`);
                 return (
-                  <tr key={`${gw.gameweek}-${user}`} className="bg-surface">
+                  <tr
+                    key={`${gw.gameweek}-${user}`}
+                    className={cell.missed ? "bg-danger-subtle" : "bg-surface"}
+                  >
                     <td className="px-3 py-2 font-medium">{user}</td>
                     <td className="px-3 py-2 text-muted-foreground">
                       {detail?.homeTeam ?? "—"}
@@ -82,7 +85,13 @@ export default function GameweekSummaryTable({
                     <td className="px-3 py-2 text-muted-foreground">
                       {detail?.awayTeam ?? "—"}
                     </td>
-                    <td className="px-3 py-2">{detail?.selection ?? "—"}</td>
+                    <td className="px-3 py-2">
+                      {cell.missed ? (
+                        <span className="font-medium text-danger">No bet placed</span>
+                      ) : (
+                        (detail?.selection ?? "—")
+                      )}
+                    </td>
                     <td className="px-3 py-2 text-right">
                       {detail ? detail.odds.toFixed(2) : "—"}
                     </td>

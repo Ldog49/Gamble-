@@ -1,5 +1,5 @@
 import { classifySide } from "@/lib/grading/matchers/matchResult";
-import { computeProfit } from "./aggregate";
+import { computeProfit, MISSED_BET_PENALTY } from "./aggregate";
 import type { BetWithUser } from "./aggregate";
 
 export interface StandingsRow {
@@ -20,9 +20,14 @@ export interface StandingsRow {
  * other bet types (BTTS, over/under, etc.) don't map onto a side pick, so
  * they're counted in profit/odds/wins but not in H/A/D.
  */
-export function aggregateStandings(bets: BetWithUser[], userNames: string[]): StandingsRow[] {
+export function aggregateStandings(
+  bets: BetWithUser[],
+  userNames: string[],
+  lockedGameweeks: Set<number> = new Set()
+): StandingsRow[] {
   const rows = userNames.map((name): StandingsRow => {
     const userBets = bets.filter((b) => b.user.name === name);
+    const betGameweeks = new Set(userBets.map((b) => b.gameweek));
 
     let runningProfit = 0;
     let totalStaked = 0;
@@ -52,6 +57,13 @@ export function aggregateStandings(bets: BetWithUser[], userNames: string[]): St
         if (side === "home") home++;
         else if (side === "away") away++;
         else if (side === "draw") draw++;
+      }
+    }
+
+    for (const gameweek of lockedGameweeks) {
+      if (!betGameweeks.has(gameweek)) {
+        totalStaked += MISSED_BET_PENALTY;
+        runningProfit -= MISSED_BET_PENALTY;
       }
     }
 

@@ -3,6 +3,10 @@ import type { SummaryResponse, UserProfitCell } from "@/types";
 
 export type BetWithUser = Bet & { user: Pick<User, "id" | "name"> };
 
+// The standard stake every bet is placed for — also what's forfeited if a
+// gameweek locks (its first fixture kicks off) with no bet placed.
+export const MISSED_BET_PENALTY = 5;
+
 export function computeReturn(bet: Pick<Bet, "status" | "stake" | "potentialReturn">): number {
   const stake = Number(bet.stake);
   const potentialReturn = Number(bet.potentialReturn);
@@ -31,20 +35,30 @@ export function computeProfit(
  */
 export function aggregateSummary(
   bets: BetWithUser[],
-  userNames: string[]
+  userNames: string[],
+  lockedGameweeks: Set<number> = new Set()
 ): SummaryResponse {
   const gameweeks = Array.from(
-    new Set(
-      bets.filter((b) => b.gameweek != null).map((b) => b.gameweek as number)
-    )
+    new Set([
+      ...bets.filter((b) => b.gameweek != null).map((b) => b.gameweek as number),
+      ...lockedGameweeks,
+    ])
   ).sort((a, b) => a - b);
 
   const byGameweek = gameweeks.map((gameweek) => {
     const perUser: Record<string, UserProfitCell> = {};
+    const locked = lockedGameweeks.has(gameweek);
     for (const name of userNames) {
       const bet = bets.find((b) => b.gameweek === gameweek && b.user.name === name);
       if (!bet) {
-        perUser[name] = { stake: 0, return: 0, profit: null };
+        perUser[name] = locked
+          ? {
+              stake: MISSED_BET_PENALTY,
+              return: 0,
+              profit: -MISSED_BET_PENALTY,
+              missed: true,
+            }
+          : { stake: 0, return: 0, profit: null };
         continue;
       }
       perUser[name] = {

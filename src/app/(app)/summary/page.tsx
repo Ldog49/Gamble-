@@ -1,19 +1,21 @@
 import { prisma } from "@/lib/prisma";
 import { aggregateSummary } from "@/lib/stats/aggregate";
 import { aggregateStandings } from "@/lib/stats/standings";
+import { getLockedGameweeks } from "@/lib/footballData/gameweek";
 import StandingsTable from "@/components/summary/StandingsTable";
 import GameweekSummaryTable from "@/components/summary/GameweekSummaryTable";
 import ProfitByGameweekChart from "@/components/summary/ProfitByGameweekChart";
 import CumulativeProfitChart from "@/components/summary/CumulativeProfitChart";
 
 export default async function SummaryPage() {
-  const [users, bets] = await Promise.all([
+  const [users, bets, lockedGameweeks] = await Promise.all([
     prisma.user.findMany({ orderBy: { createdAt: "asc" } }),
     prisma.bet.findMany({ include: { user: true } }),
+    getLockedGameweeks(),
   ]);
 
   const userNames = users.map((u) => u.name);
-  const summary = aggregateSummary(bets, userNames);
+  const summary = aggregateSummary(bets, userNames, lockedGameweeks);
 
   if (summary.byGameweek.length === 0) {
     return (
@@ -27,7 +29,7 @@ export default async function SummaryPage() {
     );
   }
 
-  const standings = aggregateStandings(bets, userNames);
+  const standings = aggregateStandings(bets, userNames, lockedGameweeks);
   const throughGameweek = summary.byGameweek[summary.byGameweek.length - 1].gameweek;
   const betDetails = bets.map((bet) => ({
     gameweek: bet.gameweek,

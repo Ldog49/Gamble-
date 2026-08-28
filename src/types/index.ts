@@ -93,6 +93,7 @@ export interface UserProfitCell {
   stake: number;
   return: number;
   profit: number | null;
+  missed?: boolean;
 }
 
 export interface SummaryResponse {
