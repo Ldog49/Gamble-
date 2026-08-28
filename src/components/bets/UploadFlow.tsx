@@ -48,7 +48,14 @@ export default function UploadFlow({ userName }: { userName: string }) {
         throw new Error(data.error ?? "Could not save bet");
       }
       await res.json();
-      setInsult(pickInsult(userName, payload.odds));
+      setInsult(
+        pickInsult(userName, payload.odds, {
+          homeTeam: payload.homeTeam,
+          awayTeam: payload.awayTeam,
+          selection: payload.selection,
+          betType: payload.betType,
+        })
+      );
       setStep("insulted");
       return true;
     } catch (err) {
